@@ -64,8 +64,15 @@ class Vocos(nn.Module):
         """
         Class method to create a new Vocos model instance from a pre-trained model stored in the Hugging Face model hub.
         """
-        config_path = hf_hub_download(repo_id=repo_id, filename="config.yaml", revision=revision)
-        model_path = hf_hub_download(repo_id=repo_id, filename="pytorch_model.bin", revision=revision)
+        import os
+        if os.path.isdir(repo_id):
+            print("Loading config.yaml from local directory")
+            config_path = os.path.join(repo_id, "config.yaml")
+            model_path = os.path.join(repo_id, "pytorch_model.bin")
+        else:
+            config_path = hf_hub_download(repo_id=repo_id, filename="config.yaml", revision=revision)
+            model_path = hf_hub_download(repo_id=repo_id, filename="pytorch_model.bin", revision=revision)
+        
         model = cls.from_hparams(config_path)
         state_dict = torch.load(model_path, map_location="cpu")
         if isinstance(model.feature_extractor, EncodecFeatures):
